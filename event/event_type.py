@@ -6,9 +6,14 @@ from abc import ABC
 from collections import defaultdict
 from enum import Enum
 
+
 class EventType(Enum):
     BarEvent = 0
     TickEvent = 1
+
+    @classmethod
+    def has_event(cls, name):
+        return any(name == item.name for item in cls)
 
 
 class Event(ABC):
