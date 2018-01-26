@@ -19,13 +19,13 @@ class EventType(Enum):
 class Event(ABC):
     def __init__(self, type=None):
         self.type = type.name
-        self.data = defaultdict()
 
 
 class BarEvent(Event):
-    def __init__(self, data):
+    def __init__(self, data, ticker):
         super().__init__(type=EventType.BarEvent)
         self.data = data
+        self.ticker = ticker
 
     @property
     def data(self):
@@ -39,15 +39,33 @@ class BarEvent(Event):
             self._data["Open"] = data["Open"]
             self._data["Low"] = data["Low"]
             self._data["Close"] = data["Close"]
+            self._data["Adj_Close_Price"] = data["Adj_Close_Price"]
             self._data["Volume"] = data["Volume"]
-            self._data["Date"] = data["Date"]
+            self._data["Time"] = data["Time"]
         except KeyError:
             raise ValueError("data input format error: not HOLCV")
 
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        format_str = """Ticker name: %s High: %s, Open: %s,
+                        Low: %s, Close: %s, adj_close: %s,
+                        Volume: %s, Time: %s""" %(self._data["Ticker"],
+                                                  self._data["High"],
+                                                  self._data["Open"],
+                                                  self._data["Low"],
+                                                  self._data["Close"],
+                                                  self._data["Adj_Close_Price"],
+                                                  self._data["Volume"],
+                                                  self._data["Time"])
+        return format_str
+
 
 class TickEvent(Event):
-    def __init__(self, data, level=1):
+    def __init__(self, data, ticker, level=1):
         super().__init__(type=EventType.TickEvent)
+        self.ticker = ticker
         self.level = level
         self.data = data
 
@@ -61,10 +79,27 @@ class TickEvent(Event):
         try:
             self._data["Time"] = data["Time"]
             for i in range(self.level):
-                self._data["Ask%s" % str(i)] = data["Ask%s" % str(i)]
-                self._data["Bid%s" % str(i)] = data["Bid%s" % str(i)]
+                self._data["Ask%s" % str(i + 1)] = data["Ask%s" % str(i + 1)]
+                self._data["Bid%s" % str(i + 1)] = data["Bid%s" % str(i + 1)]
+                self._data["Ask%s_Size" % str(i + 1)] = data["Ask%s_Size" % str(i + 1)]
+                self._data["Bid%s_size" % str(i + 1)] = data["Bid%s_Size" % str(i + 1)]
+
         except KeyError:
             raise ValueError("check the assigned data if it is a tick data")
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        for i in range(self.level):
+            format_str = """Best_Ask: %s, BAsk_Size: %s,
+                            Best_Bid: %s, BBid_Size: %s""" % (self._data["Ask1"],
+                                                              self._data["Ask1_Size"],
+                                                              self._data["Bid1"],
+                                                              self._data["Bid1_Size"])
+        return format_str
+
+
 
 
 
