@@ -52,7 +52,7 @@ class StandardEventEngine(object):
 
     def start(self):
         self._on = True
-        self._run()
+        self._event_thread.start()
 
     def stop(self):
         """
